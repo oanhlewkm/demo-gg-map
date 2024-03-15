@@ -31,3 +31,13 @@ body {
     text-wrap: balance;
   }
 }
+
+.marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 32px;
+  user-select: none;
+  transform: translate(-50%, -75%);
+}
