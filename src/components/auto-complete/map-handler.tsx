@@ -8,7 +8,7 @@ interface Props {
 
 const MapHandler = ({ place, setPosition }: Props) => {
   const map = useMap();
-  console.log("=========> MapHandler place", place?.geometry?.viewport);
+
   useEffect(() => {
     if (!map || !place || !setPosition) return;
     if (place.geometry?.viewport) {

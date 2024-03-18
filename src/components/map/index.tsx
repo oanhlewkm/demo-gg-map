@@ -55,7 +55,6 @@ export default function MapDemo() {
     fetch(url)
       .then((res) => res.json())
       .then((data: any) => {
-        console.log("==============> data city", data);
         setAddress(data.address);
       });
   };

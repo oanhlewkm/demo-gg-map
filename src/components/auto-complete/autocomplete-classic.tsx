@@ -27,7 +27,6 @@ export const PlaceAutocompleteClassic = ({ onPlaceSelect }: Props) => {
     if (!placeAutocomplete) return;
 
     placeAutocomplete.addListener("place_changed", () => {
-      console.log("placeAutocomplete.getPlace()", placeAutocomplete.getPlace());
       onPlaceSelect(placeAutocomplete.getPlace());
     });
   }, [onPlaceSelect, placeAutocomplete]);
