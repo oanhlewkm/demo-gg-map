@@ -1,10 +1,16 @@
 "use client";
 
-import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-import React, { useCallback, useEffect, useState } from "react";
+import {
+  APIProvider,
+  AdvancedMarker,
+  ControlPosition,
+  Map,
+  Marker,
+} from "@vis.gl/react-google-maps";
 import { debounce } from "lodash";
-
-const API_KEY_LOCATION = "886705b4c1182eb1c69f28eb8c520e20";
+import { useCallback, useEffect, useState } from "react";
+import { CustomMapControl } from "../auto-complete/map-control";
+import MapHandler from "../auto-complete/map-handler";
 
 export default function MapDemo() {
   const [position, setPosition] = useState({
@@ -13,6 +19,10 @@ export default function MapDemo() {
   });
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState<any>();
+  const [defaultZoom, setDefaultZoom] = useState(18);
+
+  const [selectedPlace, setSelectedPlace] =
+    useState<google.maps.places.PlaceResult | null>(null);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debounceChangeData = useCallback(
@@ -22,6 +32,7 @@ export default function MapDemo() {
     }, 500),
     []
   );
+
   useEffect(() => {
     if (loading) {
       ((async) => {
@@ -76,14 +87,16 @@ export default function MapDemo() {
   return (
     <div>
       <div style={{ height: "45vh", width: "100%" }}>
-        <APIProvider apiKey={"AIzaSyCzJLIMy5wg1GDBU4QycDAIyXy0i2slCEM"}>
+        <APIProvider apiKey={"AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg"}>
           <Map
             defaultCenter={position}
-            defaultZoom={10}
+            defaultZoom={defaultZoom}
             gestureHandling={"greedy"}
-            disableDefaultUI={false}
+            disableDefaultUI={true}
+            onZoomChanged={(e) => setDefaultZoom(e.detail.zoom)}
+            mapId={"test AdvancedMarker "}
           >
-            <Marker
+            <AdvancedMarker
               position={position}
               draggable
               onDrag={(e) =>
@@ -92,6 +105,15 @@ export default function MapDemo() {
                   lng: e.latLng?.lng() ?? 0,
                 })
               }
+            />
+            <CustomMapControl
+              controlPosition={ControlPosition.TOP}
+              onPlaceSelect={setSelectedPlace}
+            />
+
+            <MapHandler
+              place={selectedPlace}
+              setPosition={debounceChangeData}
             />
           </Map>
         </APIProvider>
@@ -105,7 +127,8 @@ export default function MapDemo() {
             from {address.house_number} {address.road}
           </div>
           <div>
-            {address.city_district}, {address.city}, {address.country}
+            Q. {address?.city_district ?? address?.suburb}, TP. {address.city},{" "}
+            {address.country}
           </div>
         </div>
       )}
