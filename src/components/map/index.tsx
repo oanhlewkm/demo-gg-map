@@ -1,25 +1,54 @@
 "use client";
 
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-import React, { useEffect, useState } from "react";
-let map;
+import React, { useCallback, useEffect, useState } from "react";
+import { debounce } from "lodash";
+
+const API_KEY_LOCATION = "886705b4c1182eb1c69f28eb8c520e20";
+
 export default function MapDemo() {
   const [position, setPosition] = useState({
     lat: 0,
     lng: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [address, setAddress] = useState<any>();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debounceChangeData = useCallback(
+    debounce((data: any) => {
+      setPosition(data);
+      fetchLocation(data);
+    }, 500),
+    []
+  );
   useEffect(() => {
     if (loading) {
       ((async) => {
         navigator.geolocation.getCurrentPosition((res: any) => {
           console.log("==============> chay get current loction:", res);
-          setPosition({ lat: res.coords.latitude, lng: res.coords.longitude });
+          const dataPostion = {
+            lat: res.coords.latitude,
+            lng: res.coords.longitude,
+          };
+          setPosition(dataPostion);
+          fetchLocation(dataPostion);
           setLoading(false);
         });
       })();
     }
   }, [loading]);
+
+  const fetchLocation = (data: any) => {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${data.lat}&lon=${data.lng}`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((data: any) => {
+        console.log("==============> data city", data);
+        setAddress(data.address);
+      });
+  };
+
   if (loading)
     return (
       <div className="flex flex-row items-center justify-center">
@@ -45,15 +74,41 @@ export default function MapDemo() {
       </div>
     );
   return (
-    <APIProvider apiKey={"AIzaSyCzJLIMy5wg1GDBU4QycDAIyXy0i2slCEM"}>
-      <Map
-        defaultCenter={position}
-        defaultZoom={10}
-        gestureHandling={"greedy"}
-        disableDefaultUI={true}
-      >
-        <Marker position={position} />
-      </Map>
-    </APIProvider>
+    <div>
+      <div style={{ height: "45vh", width: "100%" }}>
+        <APIProvider apiKey={"AIzaSyCzJLIMy5wg1GDBU4QycDAIyXy0i2slCEM"}>
+          <Map
+            defaultCenter={position}
+            defaultZoom={10}
+            gestureHandling={"greedy"}
+            disableDefaultUI={false}
+          >
+            <Marker
+              position={position}
+              draggable
+              onDrag={(e) =>
+                debounceChangeData({
+                  lat: e.latLng?.lat() ?? 0,
+                  lng: e.latLng?.lng() ?? 0,
+                })
+              }
+            />
+          </Map>
+        </APIProvider>
+      </div>
+      {address && (
+        <div
+          className="bg-black text-white flex flex-col space-y-3 text-sm text-center"
+          style={{ height: 50 }}
+        >
+          <div>
+            from {address.house_number} {address.road}
+          </div>
+          <div>
+            {address.city_district}, {address.city}, {address.country}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

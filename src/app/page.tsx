@@ -28,7 +28,7 @@ export default function Home() {
           </a>
         </div>
       </div>
-      <div className="" style={{ height: "50vh", width: "100%" }}>
+      <div style={{ height: "50vh", width: "100%" }}>
         <MapDemo />
       </div>
     </main>
