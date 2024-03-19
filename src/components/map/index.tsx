@@ -11,6 +11,7 @@ import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import { CustomMapControl } from "../auto-complete/map-control";
 import MapHandler from "../auto-complete/map-handler";
+import { GG_MAP_API_KEY } from "../utils/constant";
 
 export default function MapDemo() {
   const [position, setPosition] = useState({
@@ -86,7 +87,7 @@ export default function MapDemo() {
   return (
     <div>
       <div style={{ height: "45vh", width: "100%" }}>
-        <APIProvider apiKey={"AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg"}>
+        <APIProvider apiKey={GG_MAP_API_KEY}>
           <Map
             defaultCenter={position}
             defaultZoom={defaultZoom}
