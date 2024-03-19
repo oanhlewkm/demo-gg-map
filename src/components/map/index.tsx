@@ -5,13 +5,16 @@ import {
   AdvancedMarker,
   ControlPosition,
   Map,
-  Marker,
 } from "@vis.gl/react-google-maps";
 import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { GG_MAP_API_KEY } from "../../utils/constant";
+import { POLYGONS } from "../../utils/encoded-polygon-data";
 import { CustomMapControl } from "../auto-complete/map-control";
 import MapHandler from "../auto-complete/map-handler";
-import { GG_MAP_API_KEY } from "../utils/constant";
+import { Circle } from "../circle";
+import { Polygon } from "../polygon";
+import BigNumber from "bignumber.js";
 
 export default function MapDemo() {
   const [position, setPosition] = useState({
@@ -20,8 +23,8 @@ export default function MapDemo() {
   });
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState<any>();
-  const [defaultZoom, setDefaultZoom] = useState(18);
-
+  const [defaultZoom, setDefaultZoom] = useState(20);
+  const [radius, setRadius] = useState(24);
   const [selectedPlace, setSelectedPlace] =
     useState<google.maps.places.PlaceResult | null>(null);
 
@@ -38,7 +41,6 @@ export default function MapDemo() {
     if (loading) {
       ((async) => {
         navigator.geolocation.getCurrentPosition((res: any) => {
-          console.log("==============> chay get current loction:", res);
           const dataPostion = {
             lat: res.coords.latitude,
             lng: res.coords.longitude,
@@ -59,6 +61,14 @@ export default function MapDemo() {
         setAddress(data.address);
       });
   };
+
+  const distanceVal = useMemo(() => {
+    let amount = new BigNumber(radius);
+    if (radius > 1000) {
+      amount = amount.dividedBy(1000);
+      return `${amount.toFormat(2)}km`;
+    } else return `${amount.toFormat(2)}m`;
+  }, [radius]);
 
   if (loading)
     return (
@@ -115,6 +125,19 @@ export default function MapDemo() {
               place={selectedPlace}
               setPosition={debounceChangeData}
             />
+            <Polygon strokeWeight={1.5} encodedPaths={POLYGONS} />
+            <Circle
+              radius={radius}
+              center={position}
+              onRadiusChanged={setRadius}
+              strokeColor={"black"}
+              strokeOpacity={1}
+              strokeWeight={3}
+              fillColor={"#3b82f6"}
+              fillOpacity={0.3}
+              editable
+              draggable={false}
+            />
           </Map>
         </APIProvider>
       </div>
@@ -124,7 +147,7 @@ export default function MapDemo() {
           style={{ height: 50 }}
         >
           <div>
-            from {address.house_number} {address.road}
+            {distanceVal} from {address.house_number} {address.road}
           </div>
           <div>
             Q. {address?.city_district ?? address?.suburb}, TP. {address.city},{" "}
